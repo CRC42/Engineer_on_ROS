@@ -1,0 +1,5 @@
+<launch>
+    <rosparam command="load" file="$(find sensor_ros_driver)/config/config.yaml" />
+    <node pkg="sensor_ros_driver" type="camera_ros" name="camera_ros"  output="screen">
+    </node>
+</launch>
