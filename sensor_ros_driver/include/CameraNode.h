@@ -30,7 +30,8 @@ class CameraNode
         CameraNode();
         bool CameraNodeInit();
         bool CameraRunTask();
-        bool CameraRunSoftTriggerTask();
+        bool CameraRunSoftTriggerTask(ros::Time stamp);
+        void CameraPublish(ros::Time stamp = ros::Time::now());
         bool CameraRelease();
 };
 
@@ -128,30 +129,14 @@ bool CameraNode::CameraRunTask()
     {
         if(CameraGetImageBuffer(hCamera,&sFrameInfo,&pbyBuffer,1000) == CAMERA_STATUS_SUCCESS)
 		{
-		    CameraImageProcess(hCamera, pbyBuffer, g_pRgbBuffer,&sFrameInfo);
-		    
-		    cv::Mat matImage(
-					Size(sFrameInfo.iWidth,sFrameInfo.iHeight), 
-					sFrameInfo.uiMediaType == CAMERA_MEDIA_TYPE_MONO8 ? CV_8UC1 : CV_8UC3,
-					g_pRgbBuffer
-					);
-            std_msgs::Header header;
-            header.stamp = ros::Time::now();
-            sensor_msgs::ImagePtr msg = cv_bridge::CvImage(header, "bgr8", matImage).toImageMsg();
-            // publish图像
-            pub.publish(msg);
-            loop_rate.sleep();
-
-            //在成功调用CameraGetImageBuffer后，必须调用CameraReleaseImageBuffer来释放获得的buffer。
-			//否则再次调用CameraGetImageBuffer时，程序将被挂起一直阻塞，直到其他线程中调用CameraReleaseImageBuffer来释放了buffer
-			CameraReleaseImageBuffer(hCamera,pbyBuffer);
+		    CameraPublish();
 		}
     }
     return true;
 }
 
 /** 
- * @brief 相机在软同步模式下，向外发布数据
+ * @brief 相机反初始化
  */
 bool CameraNode::CameraRelease()
 {
@@ -161,16 +146,12 @@ bool CameraNode::CameraRelease()
     return true;
 }
 
-
 /** 
- * @brief 相机在软同步模式下，向外发布数据
+ * @brief 相机发布数据到image_topic
  */
-bool CameraNode::CameraRunSoftTriggerTask()
+void CameraNode::CameraPublish(ros::Time stamp)
 {
-
-    if(CameraSoftTrigger(hCamera)==CAMERA_STATUS_SUCCESS && CameraGetImageBuffer(hCamera,&sFrameInfo,&pbyBuffer,1000) == CAMERA_STATUS_SUCCESS)
-    {
-        CameraImageProcess(hCamera, pbyBuffer, g_pRgbBuffer,&sFrameInfo);
+    CameraImageProcess(hCamera, pbyBuffer, g_pRgbBuffer,&sFrameInfo);
         
         cv::Mat matImage(
                 Size(sFrameInfo.iWidth,sFrameInfo.iHeight), 
@@ -178,10 +159,21 @@ bool CameraNode::CameraRunSoftTriggerTask()
                 g_pRgbBuffer
                 );
         std_msgs::Header header;
-        header.stamp = ros::Time::now();
+        header.stamp = stamp;
         sensor_msgs::ImagePtr msg = cv_bridge::CvImage(header, "bgr8", matImage).toImageMsg();
         pub.publish(msg);
         CameraReleaseImageBuffer(hCamera,pbyBuffer);
+}
+
+/** 
+ * @brief 相机在软同步模式下，向外发布数据
+ */
+bool CameraNode::CameraRunSoftTriggerTask(ros::Time stamp)
+{
+
+    if(CameraSoftTrigger(hCamera)==CAMERA_STATUS_SUCCESS && CameraGetImageBuffer(hCamera,&sFrameInfo,&pbyBuffer,1000) == CAMERA_STATUS_SUCCESS)
+    {
+        CameraPublish(stamp);
     }
     return true;
 }

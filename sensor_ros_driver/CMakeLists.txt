@@ -81,8 +81,8 @@ message(STATUS "    libraries: ${OpenCV_LIBS}")
 message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
 add_library(mindvision SHARED IMPORTED)
 set_target_properties(mindvision PROPERTIES 
-    IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/sdk/mindvision/lib/x64/libMVSDK.so
-    INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/sdk/mindvision/include)
+    IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/include/sdk/mindvision/lib/x64/libMVSDK.so
+    INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/include/sdk/mindvision/include)
 add_executable(camera_ros src/camera_ros.cpp)
 add_executable(save_demo src/save_demo.cpp)
 target_link_libraries(camera_ros ${catkin_LIBRARIES}

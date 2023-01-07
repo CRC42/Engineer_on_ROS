@@ -6,7 +6,7 @@ imu_ext_R:
 imu_ext_t: [0,0,0] 
 
 camera:
-    exposeTime: 4000 # 曝光时间
+    exposeTime: 6000 # 曝光时间
     FPS: 30 # 相机帧率
     iDisplayFrames: 500 # 保存图像数目
     iModeSel: 0 # 0: 连续采集模式 1: 软件触发模式 2: 硬件触发模式
